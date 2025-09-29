@@ -1,12 +1,10 @@
 package br.edu.utfpr.pb.pw44s.server.dto;
-
 import br.edu.utfpr.pb.pw44s.server.model.Address;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,7 +18,6 @@ public class AddressDTO {
     private String state;
     private String zipCode;
     private String country;
-
     public AddressDTO(Address address) {
         if (address != null) {
             this.id = address.getId();
@@ -30,7 +27,6 @@ public class AddressDTO {
             this.state = address.getState();
             this.zipCode = address.getZipCode();
             this.country = address.getCountry();
-
         }
     }
 }

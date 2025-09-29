@@ -1,5 +1,4 @@
 package br.edu.utfpr.pb.pw44s.server.controller;
-
 import br.edu.utfpr.pb.pw44s.server.dto.AddressDTO;
 import br.edu.utfpr.pb.pw44s.server.model.Address;
 import br.edu.utfpr.pb.pw44s.server.model.User;
@@ -13,15 +12,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
 import java.net.URI;
 import java.util.List;
-
 @RestController
 @RequestMapping("addresses")
-
 public class AddressController extends CrudController<Address, AddressDTO, Long> {
-
     private final IAddressService addressService;
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
@@ -31,17 +26,14 @@ public class AddressController extends CrudController<Address, AddressDTO, Long>
         this.modelMapper = modelMapper;
         this.userRepository = userRepository;
     }
-
     @Override
     protected ICrudService<Address, Long> getService() {
         return addressService;
     }
-
     @Override
     protected ModelMapper getModelMapper() {
         return this.modelMapper;
     }
-
     public ResponseEntity<List<AddressDTO>> findAll() {
         List<Address> addresses = addressService.findAll();
         List<AddressDTO> dtos = addresses.stream()
@@ -49,23 +41,17 @@ public class AddressController extends CrudController<Address, AddressDTO, Long>
             .toList();
         return ResponseEntity.ok(dtos);
     }
-
     @Override
     @PostMapping
     public ResponseEntity<AddressDTO> create(@Valid @RequestBody AddressDTO entityDto) {
         Address entity = getModelMapper().map(entityDto, Address.class);
-
-        // Get authentication from SecurityContext
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
-            // Set the user from authentication
             Long userId = getUserIdFromAuthentication(authentication);
-            // Fetch full user to include username and displayName
             User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found: " + userId));
             entity.setUser(user);
         }
-
         Address saved = addressService.save(entity);
         AddressDTO dto = new AddressDTO(saved);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -74,10 +60,8 @@ public class AddressController extends CrudController<Address, AddressDTO, Long>
             .toUri();
         return ResponseEntity.created(location).body(dto);
     }
-
     @GetMapping("/user")
     public ResponseEntity<List<AddressDTO>> getAddressesByUser(Authentication authentication) {
-        // Assuming User has id in authentication
         Long userId = getUserIdFromAuthentication(authentication);
         List<Address> addresses = addressService.findByUserId(userId);
         List<AddressDTO> dtos = addresses.stream()
@@ -85,17 +69,12 @@ public class AddressController extends CrudController<Address, AddressDTO, Long>
             .toList();
         return ResponseEntity.ok(dtos);
     }
-
     private Long getUserIdFromAuthentication(Authentication authentication) {
-        // Get username from authentication (JWT subject)
         String username = authentication.getName();
-
-        // Find user by username and return ID
         User user = userRepository.findUserByUsername(username);
         if (user != null) {
             return user.getId();
         }
-
         throw new RuntimeException("User not found: " + username);
     }
 }

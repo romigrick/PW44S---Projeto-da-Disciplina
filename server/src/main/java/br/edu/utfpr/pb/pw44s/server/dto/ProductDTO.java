@@ -1,14 +1,11 @@
 package br.edu.utfpr.pb.pw44s.server.dto;
-
 import br.edu.utfpr.pb.pw44s.server.model.Category;
 import br.edu.utfpr.pb.pw44s.server.model.Product;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,7 +17,6 @@ public class ProductDTO {
     private BigDecimal price;
     private String urlImagem;
     private CategoryDTO category;
-
     public ProductDTO(Product product) {
         if (product != null) {
             this.id = product.getId();

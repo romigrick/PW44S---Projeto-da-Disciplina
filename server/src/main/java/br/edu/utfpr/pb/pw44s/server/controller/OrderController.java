@@ -1,5 +1,4 @@
 package br.edu.utfpr.pb.pw44s.server.controller;
-
 import br.edu.utfpr.pb.pw44s.server.dto.OrderDTO;
 import br.edu.utfpr.pb.pw44s.server.model.Address;
 import br.edu.utfpr.pb.pw44s.server.model.Order;
@@ -15,21 +14,17 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 @RestController
 @RequestMapping("orders")
 public class OrderController extends CrudController<Order, OrderDTO, Long> {
-
     private final IOrderService orderService;
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
-
     public OrderController(IOrderService orderService, ModelMapper modelMapper, UserRepository userRepository, AddressRepository addressRepository) {
         super(Order.class, OrderDTO.class);
         this.orderService = orderService;
@@ -37,17 +32,14 @@ public class OrderController extends CrudController<Order, OrderDTO, Long> {
         this.userRepository = userRepository;
         this.addressRepository = addressRepository;
     }
-
     @Override
     protected ICrudService<Order, Long> getService() {
         return orderService;
     }
-
     @Override
     protected ModelMapper getModelMapper() {
         return this.modelMapper;
     }
-
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<OrderDTO>> findAll() {
@@ -57,7 +49,6 @@ public class OrderController extends CrudController<Order, OrderDTO, Long> {
             .collect(Collectors.toList());
         return ResponseEntity.ok(orderDTOs);
     }
-
     @GetMapping("{id}")
     public ResponseEntity<OrderDTO> findOne(@PathVariable Long id) {
         Order order = orderService.findById(id);
@@ -68,60 +59,41 @@ public class OrderController extends CrudController<Order, OrderDTO, Long> {
             return ResponseEntity.noContent().build();
         }
     }
-
     @PostMapping("/finalize")
     public ResponseEntity<OrderDTO> finalizePurchase(@RequestBody Order order, Authentication authentication) {
-        // Define o usuário a partir da autenticação
         Long userId = getUserIdFromAuthentication(authentication);
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         order.setUser(user);
-
-        // Load the full address if provided
         if (order.getAddress() != null && order.getAddress().getId() != null) {
             Address address = addressRepository.findById(order.getAddress().getId()).orElseThrow(() -> new RuntimeException("Address not found"));
             order.setAddress(address);
         }
-
-        // Salva o pedido com itens
         Order savedOrder = orderService.createOrder(order);
-
-        // Converte para DTO
         OrderDTO orderDTO = new OrderDTO(savedOrder);
-
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(savedOrder.getId())
                 .toUri();
-
         return ResponseEntity.created(location).body(orderDTO);
     }
     @GetMapping("/user")
     public ResponseEntity<List<OrderDTO>> getOrdersByUser(Authentication authentication) {
         Long userId = getUserIdFromAuthentication(authentication);
         List<Order> orders = orderService.findByUserId(userId);
-
-        // Apply ordering to items within each order
         for (Order order : orders) {
             orderService.ensureRelationshipsLoaded(order);
         }
-
         List<OrderDTO> orderDTOs = orders.stream()
             .map(OrderDTO::new)
             .collect(Collectors.toList());
-
         return ResponseEntity.ok(orderDTOs);
     }
-
     private Long getUserIdFromAuthentication(Authentication authentication) {
-        // Get username from authentication (JWT subject)
         String username = authentication.getName();
-
-        // Find user by username and return ID
         User user = userRepository.findUserByUsername(username);
         if (user != null) {
             return user.getId();
         }
-
         throw new RuntimeException("User not found: " + username);
     }
 }

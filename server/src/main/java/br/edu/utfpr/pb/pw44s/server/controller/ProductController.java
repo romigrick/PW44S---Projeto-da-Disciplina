@@ -1,5 +1,4 @@
 package br.edu.utfpr.pb.pw44s.server.controller;
-
 import br.edu.utfpr.pb.pw44s.server.dto.ProductDTO;
 import br.edu.utfpr.pb.pw44s.server.model.Product;
 import br.edu.utfpr.pb.pw44s.server.service.IProductService;
@@ -10,11 +9,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
-
 @RestController
 @RequestMapping("products")
 public class ProductController {
@@ -25,16 +22,13 @@ public class ProductController {
         this.productService = productService;
         this.modelMapper = modelMapper;
     }
-
     @PostMapping
-
     public ResponseEntity<Product> save(@Valid @RequestBody Product product){
         productService.save(product);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(product.getId()).toUri();
         return ResponseEntity.created(location).build();
     }
-
     @GetMapping
     public ResponseEntity<List<ProductDTO>> getAll(){
         List<ProductDTO> dtos = productService.findAll().stream()
@@ -42,7 +36,6 @@ public class ProductController {
             .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
-
     @GetMapping ("page")
     public ResponseEntity<List<ProductDTO>> findAll(
             @RequestParam int page,
@@ -50,7 +43,6 @@ public class ProductController {
             @RequestParam(required = false) String order,
             @RequestParam(required = false) Boolean asc){
         PageRequest pageRequest = PageRequest.of(page, size);
-
         if(order != null && asc != null){
             pageRequest = PageRequest.of(page,
                     size,
@@ -61,7 +53,6 @@ public class ProductController {
             .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
-
     @GetMapping("{id}")
     public ResponseEntity<ProductDTO> findById(@PathVariable Long id){
         Product product = this.productService.findById(id);
@@ -70,13 +61,11 @@ public class ProductController {
         }
         return ResponseEntity.ok(new ProductDTO(product));
     }
-
     @DeleteMapping("{id}")
     @ResponseStatus
     public void deleteById(@PathVariable Long id){
         this.productService.deleteById(id);
     }
-
     @GetMapping("category/{id}")
     public ResponseEntity<List<ProductDTO>> findAllByCategoryId(@PathVariable long id){
         List<ProductDTO> dtos = this.productService.findAllByCategoryId(id).stream()
