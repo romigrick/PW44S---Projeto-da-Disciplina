@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +33,13 @@ public class CategoryController extends CrudController<Category, CategoryDTO, Lo
     @GetMapping
     public ResponseEntity<List<CategoryDTO>> getAll() {
         List<CategoryDTO> dtos = categoryService.findAll().stream()
+            .map(category -> modelMapper.map(category, CategoryDTO.class))
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+    @GetMapping("search")
+    public ResponseEntity<List<CategoryDTO>> findByName(@RequestParam String name) {
+        List<CategoryDTO> dtos = categoryService.findByNameContainingIgnoreCase(name).stream()
             .map(category -> modelMapper.map(category, CategoryDTO.class))
             .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);

@@ -4,6 +4,7 @@ import br.edu.utfpr.pb.pw44s.server.repository.CategoryRepository;
 import br.edu.utfpr.pb.pw44s.server.service.ICategoryService;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+import java.util.List;
 @Service
 public class CategoryServiceImpl extends CrudServiceImpl<Category, Long> implements ICategoryService {
     private final CategoryRepository categoryRepository;
@@ -13,5 +14,9 @@ public class CategoryServiceImpl extends CrudServiceImpl<Category, Long> impleme
     @Override
     protected JpaRepository<Category, Long> getRepository() {
         return categoryRepository;
+    }
+    @Override
+    public List<Category> findByNameContainingIgnoreCase(String name) {
+        return categoryRepository.findByNameContainingIgnoreCase(name);
     }
 }

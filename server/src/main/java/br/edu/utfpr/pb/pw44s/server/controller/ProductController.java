@@ -73,4 +73,11 @@ public class ProductController {
             .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
+    @GetMapping("category/name/{name}")
+    public ResponseEntity<List<ProductDTO>> findAllByCategoryName(@PathVariable String name){
+        List<ProductDTO> dtos = this.productService.findAllByCategoryName(name).stream()
+            .map(ProductDTO::new)
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
 }
